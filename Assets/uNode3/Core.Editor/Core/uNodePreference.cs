@@ -118,6 +118,8 @@ namespace MaxyGames.UNode.Editors {
 				"\n\nIf false, will show all c# type even if there's Runtime Type that referencing the real c# type." +
 				"\n\nNote: if false, you will see duplicated type the first is Runtime Type and second is real c# type it's the best to set this to true")]
 			public bool autoHideNativeType = true;
+			[Tooltip("If true, types and members from types marked with [ComVisible(false)] will be hidden from the Node Menu and Item Selector.")]
+			public bool filterOutComVisibleFalse = true;
 			#endregion
 
 			public bool enableErrorCheck = true;
@@ -520,6 +522,7 @@ Recommended value is between 10-100."), preferenceData.maxReloadMilis);
 
 				uNodeGUIUtility.ShowField(nameof(preferenceData.showObsoleteItem), preferenceData);
 				uNodeGUIUtility.ShowField(nameof(preferenceData.autoHideNativeType), preferenceData);
+				uNodeGUIUtility.ShowField(nameof(preferenceData.filterOutComVisibleFalse), preferenceData);
 				uNodeGUIUtility.ShowField(nameof(preferenceData.ignoreIncludedAssemblies), preferenceData);
 
 				uNodeGUI.DrawCustomList(

@@ -2,6 +2,8 @@
 using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace MaxyGames.UNode {
 	/// <summary>
@@ -14,6 +16,12 @@ namespace MaxyGames.UNode {
 		/// Note: when this is filled the Filter will ignore default type filter.
 		/// </summary>
 		public Func<Type, bool> ValidateType;
+
+		/// <summary>
+		/// If true, types and members from types marked with [ComVisible(false)] will be filtered out.
+		/// </summary>
+		public bool FilterOutComVisibleFalse { get; set; } = false;
+
 		/// <summary>
 		/// Display Inherited members.
 		/// </summary>
@@ -360,6 +368,7 @@ namespace MaxyGames.UNode {
 			this.VoidType = other.VoidType;
 			this.AllowInterface = other.AllowInterface;
 			this.ValidateType = other.ValidateType;
+			this.FilterOutComVisibleFalse = other.FilterOutComVisibleFalse;
 		}
 		#endregion
 
@@ -589,8 +598,17 @@ namespace MaxyGames.UNode {
 		/// <param name="t"></param>
 		/// <returns></returns>
 		public bool IsValidTypeSimple(Type t) {
-			if(t == null)
-				return true;
+			if (t == null) return true; // Keep existing null check or behavior for null
+			// If FilterOutComVisibleFalse is true, check for ComVisibleAttribute
+			if (FilterOutComVisibleFalse) {
+				object[] attributes = t.GetCustomAttributes(typeof(System.Runtime.InteropServices.ComVisibleAttribute), true);
+				if (attributes != null && attributes.Length > 0) {
+					System.Runtime.InteropServices.ComVisibleAttribute comVisibleAttr = attributes.OfType<System.Runtime.InteropServices.ComVisibleAttribute>().FirstOrDefault();
+					if (comVisibleAttr != null && !comVisibleAttr.Value) {
+						return false; // Filter out if ComVisible(false)
+					}
+				}
+			}
 			if(t.IsByRef) {
 				t = t.GetElementType();
 			}
@@ -680,7 +698,27 @@ namespace MaxyGames.UNode {
 		}
 
 		public bool IsValidMember(MemberInfo member) {
-			if(member != null) {
+			if (member == null) return true; // Or handle as per existing logic for null member
+
+			if (FilterOutComVisibleFalse) {
+				Type typeToCheck = null;
+				if (member is Type memberAsType) {
+					typeToCheck = memberAsType;
+				} else if (member.DeclaringType != null) {
+					typeToCheck = member.DeclaringType;
+				}
+
+				if (typeToCheck != null) {
+					object[] attributes = typeToCheck.GetCustomAttributes(typeof(System.Runtime.InteropServices.ComVisibleAttribute), true);
+					if (attributes != null && attributes.Length > 0) {
+						System.Runtime.InteropServices.ComVisibleAttribute comVisibleAttr = attributes.OfType<System.Runtime.InteropServices.ComVisibleAttribute>().FirstOrDefault();
+						if (comVisibleAttr != null && !comVisibleAttr.Value) {
+							return false; // Filter out if type has ComVisible(false)
+						}
+					}
+				}
+			}
+			if(member != null) { // This check is now redundant due to the one above, but keeping original structure in mind.
 				if(OnlyGetType) {
 					if(!(member is Type)) {
 						return false;

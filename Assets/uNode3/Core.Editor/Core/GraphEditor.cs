@@ -475,6 +475,7 @@ namespace MaxyGames.UNode.Editors {
 			//else {
 			//	filter = new FilterAttribute(filter);
 			//}
+			filter.FilterOutComVisibleFalse = uNodePreference.preferenceData.filterOutComVisibleFalse;
 			filter.DisplayInstanceOnStatic = true;
 			filter.MaxMethodParam = int.MaxValue;
 			filter.Public = true;

@@ -477,10 +477,16 @@ namespace MaxyGames.UNode {
 		}
 
 		public override object[] GetCustomAttributes(bool inherit) {
+	if(BaseType != null) {
+		return BaseType.GetCustomAttributes(inherit);
+	}
 			return Array.Empty<object>();
 		}
 
 		public override object[] GetCustomAttributes(Type attributeType, bool inherit) {
+	if(BaseType != null) {
+		return BaseType.GetCustomAttributes(attributeType, inherit);
+	}
 			return Array.Empty<object>();
 		}
 
